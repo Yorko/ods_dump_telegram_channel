@@ -1,0 +1,37 @@
+[tool.poetry]
+name = "ods-dump-telegram-channel"
+version = "0.1.0"
+description = "Send Slack ODS dump to a Telegram bot"
+authors = ["Yury Kashnitsky <yury.kashnitsky@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = ">=3.9,<4"
+
+async-timeout = "^4.0.2"
+python-telegram-bot = "^20.0a4"
+PyYAML = "^6.0"
+
+[tool.poetry.dev-dependencies]
+black = "^22.3.0"
+flake8 = "^3.7.9"
+pylint = "^2.12.2"
+pytest = "^5.2"
+pytest-cov = "^2.8.1"
+pytest-html = "^2.1.0"
+
+[tool.black]
+line-length = 119
+target-version = ['py38', 'py39']
+include = '\.pyi?$'
+exclude = '''
+/(
+  | \.git
+  | \.tox
+  | \*venv
+)/
+'''
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
