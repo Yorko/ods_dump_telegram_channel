@@ -1,0 +1,7 @@
+data:
+  path_to_ods_slack_dump: "/Users/kashnitskiyy/Documents/data/opendatascience_Slack_export_Mar_12_2015_Jan_17_2022/"
+  ods_channel_name: "_jobs"
+
+telegram:
+  path_to_telegram_bot_secret_file: "/Users/kashnitskiyy/scrt/ods_jobs_dump_bot"
+  telegram_user_id: 297791890
