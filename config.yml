@@ -4,4 +4,4 @@ data:
 
 telegram:
   path_to_telegram_bot_secret_file: "/Users/kashnitskiyy/scrt/ods_jobs_dump_bot"
-  telegram_user_id: 297791890
+  telegram_chat_id: -1001788210074
