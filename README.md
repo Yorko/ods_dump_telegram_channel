@@ -9,12 +9,9 @@ This code is used to populate the [ODS jobs dump](https://t.me/ods_jobs_dump_bot
 - Install Poetry with Python >= 3.9;
 - Run `poetry install` to set up a virtual environment for the project and install all dependencies.
 
-## Creating a Telegram bot
+## Specifying the Telegram channel data
 
-- Send `/newbot` to Telegram bot [@BotFather](https://t.me/BotFather), follow the instructions;
-- Save the provided token and store it securely;
-- Specify path to the file containing the token in `config.yml` under `telegram` -> `path_to_telegram_bot_secret_file`;
-- Specify your own Telegram user ID in `config.yml` under  `telegram` -> `telegram_user_id`. You can get your ID via [@userinfobot](https://t.me/userinfobot).
+- Specify your channel ID in `config.yml` under  `telegram` -> `telegram_chat_id`. You can get your ID via [@username_to_id_bot](https://t.me/username_to_id_bot).
 
 ## Downloading the dump
 
