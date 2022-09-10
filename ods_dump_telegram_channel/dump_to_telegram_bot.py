@@ -13,7 +13,7 @@ params: Dict[str, Any] = load_config_params()
 PATH_TO_DUMP = Path(params["data"]["path_to_ods_slack_dump"])
 with open(params["telegram"]["path_to_telegram_bot_secret_file"]) as f:
     TELEGRAM_TOKEN = f.read().strip()
-TELEGRAM_USER_ID = params["telegram"]["telegram_user_id"]
+TELEGRAM_CHAT_ID = params["telegram"]["telegram_chat_id"]
 
 
 def get_user_dict(path_to_dump: Path, filename: str = "users.json"):
@@ -91,8 +91,8 @@ def get_posts(
 async def send(
     message_body: str,
     telegram_token: str = TELEGRAM_TOKEN,
-    telegram_user_id: str = TELEGRAM_USER_ID,
-    timeout_sec: int = 30,
+    telegram_user_id: str = TELEGRAM_CHAT_ID,
+    timeout_sec: int = 15,
 ):
     bot = telegram.Bot(telegram_token)
     async with bot:
