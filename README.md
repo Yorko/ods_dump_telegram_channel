@@ -9,7 +9,7 @@ This code is used to populate the [ODS jobs dump](https://t.me/ods_jobs_dump_bot
 - Install Poetry with Python >= 3.9;
 - Run `poetry install` to set up a virtual environment for the project and install all dependencies.
 
-## Specifying the Telegram channel data
+## Specifying the Telegram channel ID
 
 - Specify your channel ID in `config.yml` under  `telegram` -> `telegram_chat_id`. You can get your ID via [@username_to_id_bot](https://t.me/username_to_id_bot).
 
@@ -30,5 +30,5 @@ The ODS Slack dump that I got spans 2015-04-14 to 2022-01-17. [Download link](ht
 Some of the caveates are mentiones in the source code of `ods_dump_telegram_channel.dump_to_telegram_bot.py` as TODOs. Current drawbacks:
 
 - formatting to HTML is not complete, there are some issues, and I only formatted bolded text, user mentions, and hyperlinks, the rest is shown as plain text;
-- the `bot.send_message` is still hitting timeout errors (e.g. telegram.error.RetryAfter: Flood control exceeded) so you'd better process posts in chuncks;
-- Messages are limited to 4096 chars (that's not enough for e.g. posts in **#article_essence** where valuable content goes into a thread as well as the main post). It'd be nice to implement sending replies from a Slack thread as replies to a Telegram message.
+- Messages are limited to 4096 chars (that's not enough for e.g. posts in **#article_essence** where valuable content goes into a thread as well as the main post). It'd be nice to implement sending replies from a Slack thread as replies to a Telegram message,
+- the code is quite slow, an asynchrounous version is commited to the [`feature/send_async_messages`](https://github.com/Yorko/ods_dump_telegram_channel/tree/feature/send_async_messages) branch, however, it also hits timeouts (e.g. telegram.error.RetryAfter: Flood control exceeded).
