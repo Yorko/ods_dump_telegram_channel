@@ -1,19 +1,12 @@
-import asyncio
 import json
+import time
 from pathlib import Path
 from typing import Any, Dict, List
 
-import telegram
-from async_timeout import timeout
+import requests
+from tqdm import tqdm
 
 from ods_dump_telegram_channel.utils import load_config_params, process_to_html
-
-# loading project-wide configuration params
-params: Dict[str, Any] = load_config_params()
-PATH_TO_DUMP = Path(params["data"]["path_to_ods_slack_dump"])
-with open(params["telegram"]["path_to_telegram_bot_secret_file"]) as f:
-    TELEGRAM_TOKEN = f.read().strip()
-TELEGRAM_CHAT_ID = params["telegram"]["telegram_chat_id"]
 
 
 def get_user_dict(path_to_dump: Path, filename: str = "users.json"):
@@ -37,6 +30,7 @@ def get_posts(
     channel: str,
     add_replies: bool = False,
     max_length: int = 3800,
+    min_length: int = 300,
 ) -> List[str]:
     posts = []
 
@@ -65,6 +59,9 @@ def get_posts(
 
                 post = f"POSTED BY *{author}* on {post_date}:\n{text}"
 
+                if len(post) < min_length:
+                    continue
+
                 # Nice try but posts get too long with replies, while Telegram can
                 # send messages up to 4096 tokens.
                 # TODO: figure out how to send messages as replies
@@ -88,46 +85,60 @@ def get_posts(
     return posts
 
 
-async def send(
-    message_body: str,
-    telegram_token: str = TELEGRAM_TOKEN,
-    telegram_user_id: str = TELEGRAM_CHAT_ID,
-    timeout_sec: int = 15,
+def send_with_sleep(
+    messages: List[str],
+    user_dict,
+    token: str,
+    chat_id: str,
+    short_pause_sec: int = 1,
+    long_pause_sec: int = 120,
+    send_as_html: bool = True,
 ):
-    bot = telegram.Bot(telegram_token)
-    async with bot:
-        # TODO: I'm still catching Telegram timeout errors (e.g. telegram.error.RetryAfter: Flood control exceeded)
-        #  and have to process posts in chunks
-        async with timeout(timeout_sec):
-            try:
-                await bot.send_message(
-                    text=process_to_html(message_body, user_dict=user_dict),
-                    chat_id=telegram_user_id,
-                    parse_mode="HTML",
-                )
-            except telegram.error.BadRequest:
-                await bot.send_message(
-                    text=message_body,
-                    chat_id=telegram_user_id,
-                )
+
+    for message in tqdm(messages, total=len(messages)):
+
+        html_message = process_to_html(message, user_dict=user_dict)
+        url = f"https://api.telegram.org/bot{token}/sendMessage?chat_id={chat_id}&text={html_message}"
+        if send_as_html:
+            html_url = url + "&parse_mode=html"
+            resp = requests.get(html_url).json()
+
+            # TODO: implement nice retries
+            if resp.get("error_code") == 400:
+                print("sending as raw text")
+                url = f"https://api.telegram.org/bot{token}/sendMessage?chat_id={chat_id}&text={message}"
+                resp = requests.get(url).json()
+            elif resp.get("error_code") == 429:
+                print(f"Sleeping {long_pause_sec} sec.")
+                time.sleep(long_pause_sec)
+                # TODO: here we can still hit an error, retries needed
+                resp = requests.get(html_url).json()
+            print(resp)
+
+        time.sleep(short_pause_sec)
 
 
-async def main():
-    sent_messages = [send(post) for post in posts]
-    await asyncio.gather(*sent_messages)
-
-
-if __name__ == "__main__":
+def main():
+    # loading project-wide configuration params
+    params: Dict[str, Any] = load_config_params()
+    path_to_dump = Path(params["data"]["path_to_ods_slack_dump"])
+    with open(params["telegram"]["path_to_telegram_bot_secret_file"]) as f:
+        telegram_token = f.read().strip()
+    telegram_chat_id = params["telegram"]["telegram_chat_id"]
 
     # get a dictionary with user nicknames
-    user_dict = get_user_dict(path_to_dump=PATH_TO_DUMP)
+    user_dict = get_user_dict(path_to_dump=path_to_dump)
 
     # get all posts from the channel
     posts = get_posts(
-        path_to_dump=PATH_TO_DUMP,
+        path_to_dump=path_to_dump,
         user_dict=user_dict,
         channel=params["data"]["ods_channel_name"],
     )
 
     # send posts to a Telegram bot
-    asyncio.run(main())
+    send_with_sleep(messages=posts, token=telegram_token, chat_id=telegram_chat_id, user_dict=user_dict)
+
+
+if __name__ == "__main__":
+    main()

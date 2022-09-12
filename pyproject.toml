@@ -11,6 +11,8 @@ python = ">=3.9,<4"
 async-timeout = "^4.0.2"
 python-telegram-bot = "^20.0a4"
 PyYAML = "^6.0"
+requests = "^2.28.1"
+tqdm = "^4.64.1"
 
 [tool.poetry.dev-dependencies]
 black = "^22.3.0"
